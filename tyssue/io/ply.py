@@ -176,10 +176,11 @@ _parsers = {
     "face": _parse_generic,
     "edge": _parse_generic,
     "volume": _parse_generic,
+    "cell": _parse_generic,
 }
 
 
-def read_ply(ply_file):
+def read_ply(ply_file, cell_element="volume"):
 
     with open(ply_file, "r", encoding="latin_1") as ply_f:
         structures, sizes, offsets = parse_header(ply_f)
@@ -193,7 +194,7 @@ def read_ply(ply_file):
             size = sizes[element]
             offset = offsets[element]
             df = parser(ply_f, structure, size, offset)
-            if element == "volume":
+            if element == cell_element:
                 datasets["cell"] = df
                 df.index.name = "cell"
             else:
@@ -203,13 +204,13 @@ def read_ply(ply_file):
     return datasets
 
 
-def load_ply(ply_file):
+def load_ply(ply_file, cell_element="volume"):
     """Reads a ply file and reconstructs the datasets
     necessary to construct an epithelium.
 
     """
 
-    datasets = read_ply(ply_file)
+    datasets = read_ply(ply_file, cell_element)
 
     # repeat each edge to have one half-edge per face
     n_faces = datasets["edge"]["face_index"].apply(len)
